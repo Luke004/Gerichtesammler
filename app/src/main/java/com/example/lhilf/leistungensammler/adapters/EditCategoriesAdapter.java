@@ -17,6 +17,8 @@ import com.example.lhilf.leistungensammler.R;
 
 import java.util.List;
 
+import top.defaults.colorpicker.ColorPickerPopup;
+
 public class EditCategoriesAdapter extends ArrayAdapter<Category> {
 
     private Context context;
@@ -37,8 +39,23 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         ImageView category_delete_btn = rowView.findViewById(R.id.category_delete_btn);
 
 
-
         Category category = getItem(position);
+
+        category_color_pick_btn.setOnClickListener(view -> new ColorPickerPopup.Builder(context)
+                .initialColor(Color.parseColor(category.getColor())) // set initial color
+                .enableBrightness(true) // enable brightness slider
+                .enableAlpha(false) // disable alpha slider
+                .okTitle(context.getString(R.string.select))
+                .cancelTitle(context.getString(R.string.cancel))
+                .showIndicator(true)
+                .showValue(false)
+                .build()
+                .show(view, new ColorPickerPopup.ColorPickerObserver() {
+                    @Override
+                    public void onColorPicked(int color) {
+                        view.setBackgroundColor(color);
+                    }
+                }));
 
         category_name.setText(category.getName());
 
