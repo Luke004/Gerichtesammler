@@ -1,0 +1,39 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/transparent" >
+
+    <RelativeLayout
+        android:id="@+id/recipe_dialog_relative_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#6bbc9c"
+        android:padding="12dp"
+        android:scrollbarAlwaysDrawVerticalTrack="true" >
+
+        <TextView
+            android:id="@+id/recipe_dialog_header"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/dish_recipe"
+            android:layout_marginBottom="32px"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/recipe_dialog_text"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/recipe_dialog_header"
+            android:layout_marginBottom="32px"
+            android:fontFamily="@font/kavivanar"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
+    </RelativeLayout>
+
+</ScrollView>

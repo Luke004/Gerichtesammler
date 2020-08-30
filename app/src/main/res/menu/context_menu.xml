@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_mark_as_cooked"
+        android:title="@string/mark_dish_as_cooked" />
+
+    <item
+        android:id="@+id/action_send_mail_dish"
+        android:title="@string/send_dish_mail" />
+
+    <item
+        android:id="@+id/action_edit_selected_dish"
+        android:title="@string/edit_dish" />
+
+    <item
+        android:id="@+id/action_delete_selected_dish"
+        android:title="@string/delete" />
+
+</menu>

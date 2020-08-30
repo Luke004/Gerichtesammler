@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.lhilf.leistungensammler.DishesActivity">
+
+    <item
+        android:id="@+id/action_add_new_dish"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="@string/add_new_dish"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_appearance_settings"
+        android:icon="@drawable/ic_menu_white_24dp"
+        android:title="@string/filter_dishes"
+        app:showAsAction="always" />
+
+</menu>

@@ -1,0 +1,33 @@
+<resources>
+    <string-array name="dish_categories">
+        <item>@string/dish_meat</item>
+        <item>@string/dish_veggie</item>
+        <item>@string/dish_fish</item>
+        <item>@string/dish_soup</item>
+        <item>@string/dish_dessert</item>
+    </string-array>
+
+    <string-array name="dish_categories_colors">
+        <item>#fc4e4e</item>
+        <item>#439423</item>
+        <item>#42d4f4</item>
+        <item>#c4b339</item>
+        <item>#ff638c</item>
+    </string-array>
+
+    <string-array name="dish_ratings">
+        <item>@string/rating_4</item>
+        <item>@string/rating_3</item>
+        <item>@string/rating_2</item>
+        <item>@string/rating_1</item>
+    </string-array>
+
+    <string-array name="sort_types">
+        <item>@string/sort_type_name</item>
+        <item>@string/sort_type_rating</item>
+        <item>@string/sort_type_category</item>
+        <item>@string/sort_type_duration</item>
+        <item>@string/sort_type_last_cooked</item>
+    </string-array>
+
+</resources>
