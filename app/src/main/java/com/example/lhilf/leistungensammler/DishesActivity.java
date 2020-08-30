@@ -69,6 +69,8 @@ public class DishesActivity extends AppCompatActivity {
         registerForContextMenu(dishesListView);
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
+        //sharedPref.edit().remove("first_run_ever").apply();
+
         if (sharedPref.getBoolean("first_run_ever", true)) {
             // the app is being launched for first time, do something
             // add the five categories from resources to db

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DishEditActivity extends AppCompatActivity {
 
@@ -69,11 +70,15 @@ public class DishEditActivity extends AppCompatActivity {
         ratings_adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         dish_rating.setAdapter(ratings_adapter);
 
-        // add items to dish type spinner
-        String[] dish_types = getResources().getStringArray(R.array.dish_categories);
+        // add categories to dish type spinner
+        List<Category> categories = AppDatabase.getDb(this).categoryDAO().findAll();
+        String[] categoryNames = new String[categories.size()];
+        for (int idx = 0; idx < categoryNames.length; ++idx) {
+            categoryNames[idx] = categories.get(idx).getName();
+        }
 
         ArrayAdapter<String> dish_types_adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, dish_types);
+                android.R.layout.simple_spinner_item, categoryNames);
         dish_types_adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         dish_type.setAdapter(dish_types_adapter);
 
@@ -95,8 +100,8 @@ public class DishEditActivity extends AppCompatActivity {
                     break;
                 }
             }
-            for (int idx = 0; idx < dish_types.length; ++idx) {
-                if (dish_types[idx].equals(dish.getDishType())) {
+            for (int idx = 0; idx < categoryNames.length; ++idx) {
+                if (categoryNames[idx].equals(dish.getDishType())) {
                     dish_type.setSelection(idx);
                     break;
                 }

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DishFormActivity extends AppCompatActivity {
 
@@ -72,11 +73,15 @@ public class DishFormActivity extends AppCompatActivity {
         dish_rating.setAdapter(ratings_adapter);
         dish_rating.setSelection(dish_ratings.length - 1);  // set worst rating as default value
 
-        // add items to dish type spinner
-        String[] dish_categories = getResources().getStringArray(R.array.dish_categories);
+        // add categories to dish type spinner
+        List<Category> categories = AppDatabase.getDb(this).categoryDAO().findAll();
+        String[] categoryNames = new String[categories.size()];
+        for (int idx = 0; idx < categoryNames.length; ++idx) {
+            categoryNames[idx] = categories.get(idx).getName();
+        }
 
         ArrayAdapter<String> dish_types_adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, dish_categories);
+                android.R.layout.simple_spinner_item, categoryNames);
         dish_types_adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         dish_type.setAdapter(dish_types_adapter);
 

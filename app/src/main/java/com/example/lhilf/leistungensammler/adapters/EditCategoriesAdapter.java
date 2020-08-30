@@ -1,5 +1,6 @@
 package com.example.lhilf.leistungensammler.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -10,11 +11,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.lhilf.leistungensammler.AppDatabase;
 import com.example.lhilf.leistungensammler.Category;
 
 import com.example.lhilf.leistungensammler.R;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import top.defaults.colorpicker.ColorPickerPopup;
@@ -22,10 +27,12 @@ import top.defaults.colorpicker.ColorPickerPopup;
 public class EditCategoriesAdapter extends ArrayAdapter<Category> {
 
     private Context context;
+    private List<Category> categories;
 
     public EditCategoriesAdapter(Context context, int textViewResourceId, List<Category> categories) {
         super(context, textViewResourceId, categories);
         this.context = context;
+        this.categories = categories;
     }
 
     @Override
@@ -37,7 +44,6 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         TextView category_name = rowView.findViewById(R.id.category_name);
         Button category_color_pick_btn = rowView.findViewById(R.id.category_color_pick_btn);
         ImageView category_delete_btn = rowView.findViewById(R.id.category_delete_btn);
-
 
         Category category = getItem(position);
 
@@ -56,6 +62,31 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                         view.setBackgroundColor(color);
                     }
                 }));
+
+        category_delete_btn.setOnClickListener(view -> {
+            if (categories.size() <= 3) {
+                Toast.makeText(context, context.getString(R.string.error_category_lower_limit),
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setMessage(R.string.action_delete_category)
+                    .setTitle(category.getName())
+                    .setCancelable(true)
+                    .setPositiveButton(R.string.confirm, (dialog, id) -> {
+                        // remove the category
+                        AppDatabase.getDb(context).categoryDAO().delete(category);
+                        this.clear();
+                        categories = AppDatabase.getDb(context).categoryDAO().findAll();
+                        this.addAll(categories);
+                    })
+                    .setNegativeButton(R.string.cancel, (dialog, id) -> {
+                        // cancel
+                        dialog.dismiss();
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        });
 
         category_name.setText(category.getName());
 

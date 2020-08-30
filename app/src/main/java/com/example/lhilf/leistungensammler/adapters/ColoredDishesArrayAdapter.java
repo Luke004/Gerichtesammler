@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.lhilf.leistungensammler.AppDatabase;
+import com.example.lhilf.leistungensammler.Category;
 import com.example.lhilf.leistungensammler.Dish;
 import com.example.lhilf.leistungensammler.Helper;
 import com.example.lhilf.leistungensammler.R;
@@ -71,18 +73,13 @@ public class ColoredDishesArrayAdapter extends ArrayAdapter<Dish> {
 
         String dish_type = getItem(position).getDishType();
 
-        String[] dishTypeColorArray = context.getResources().getStringArray(R.array.dish_categories_colors);
+        Category category = AppDatabase.getDb(context).categoryDAO().findByName(dish_type);
 
-        if (dish_type.equals(context.getString(R.string.dish_meat))) {
-            dish_layout.setBackgroundColor(Color.parseColor(dishTypeColorArray[0]));
-        } else if (dish_type.equals(context.getString(R.string.dish_veggie))) {
-            dish_layout.setBackgroundColor(Color.parseColor(dishTypeColorArray[1]));
-        } else if (dish_type.equals(context.getString(R.string.dish_fish))) {
-            dish_layout.setBackgroundColor(Color.parseColor(dishTypeColorArray[2]));
-        } else if (dish_type.equals(context.getString(R.string.dish_soup))) {
-            dish_layout.setBackgroundColor(Color.parseColor(dishTypeColorArray[3]));
-        } else if (dish_type.equals(context.getString(R.string.dish_dessert))) {
-            dish_layout.setBackgroundColor(Color.parseColor(dishTypeColorArray[4]));
+        if (category != null) {
+            dish_layout.setBackgroundColor(Color.parseColor(category.getColor()));
+        } else {
+            // category was deleted -> use white
+            dish_layout.setBackgroundColor(Color.WHITE);
         }
 
         int stars;

@@ -29,8 +29,8 @@ public interface CategoryDAO {
      * @return id gefunden = Optional<Category>,
      *     nicht gefunden = Optional.empty()
      */
-    @Query("SELECT * FROM Category WHERE id = :id")
-    Category findById(int id);
+    @Query("SELECT * FROM Category WHERE name = :name")
+    Category findByName(String name);
 
     /**
      * Löscht ein {@link Category} Objekt.
