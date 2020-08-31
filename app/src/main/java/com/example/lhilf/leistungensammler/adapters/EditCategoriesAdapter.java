@@ -74,7 +74,9 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                     @Override
                     public void onColorPicked(int color) {
                         if (Color.parseColor(category.getColor()) != color) {
-                            dishesArrayAdapter.notifyDataSetChanged();
+                            if (dishesArrayAdapter != null) {
+                                dishesArrayAdapter.notifyDataSetChanged();
+                            }
                             view.setBackgroundColor(color);
                             category.setColor("#" + Integer.toHexString(color));
                             AppDatabase.getDb(context).categoryDAO().update(category);
@@ -109,8 +111,10 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                         for (Dish affectedDish : affected_dishes) {
                             affectedDish.setDishType("");
                             AppDatabase.getDb(context).dishDAO().update(affectedDish);
-                            dishesArrayAdapter.deleteDishCategory(affectedDish);
-                            dishesArrayAdapter.notifyDataSetChanged();
+                            if (dishesArrayAdapter != null) {
+                                dishesArrayAdapter.deleteDishCategory(affectedDish);
+                                dishesArrayAdapter.notifyDataSetChanged();
+                            }
                         }
                     })
                     .setNegativeButton(R.string.cancel, (dialog, id) -> {
@@ -135,7 +139,9 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                     for (Dish affectedDish : affected_dishes) {
                         affectedDish.setDishType(newCategoryName);
                         AppDatabase.getDb(context).dishDAO().update(affectedDish);
-                        dishesArrayAdapter.updateDishCategory(affectedDish);
+                        if (dishesArrayAdapter != null) {
+                            dishesArrayAdapter.updateDishCategory(affectedDish);
+                        }
                     }
                     // update the category itself
                     category.setName(newCategoryName);
