@@ -56,9 +56,7 @@ public class EditCategoriesDialog extends Dialog {
             String colorCode = String.format("#%06x", nextInt);
 
             Category category = new Category(
-                    ctx.getString(R.string.my_category)
-                            // add a number for uniqueness of the name
-                            + (creationCounter > 0 ? creationCounter + 1 : ""),
+                    getNextUniqueCategoryName(),
                     colorCode);
 
             categories.add(category);
@@ -69,18 +67,30 @@ public class EditCategoriesDialog extends Dialog {
             // for auto scrolling to the bottom of list in case it goes beyond the dialog's size
             categoriesListView.post(() -> categoriesListView.setSelection(editCategoriesAdapter
                     .getCount() - 1));
-
-            creationCounter++;  // keep track of how many categories we have created
         });
 
-        // increment the creation counter for each default name category that already exists
-        // in the category list ( -> this is just to prevent a double name bug)
-        for (Category category : categories) {
-            if (category.getName().equals(ctx.getString(R.string.my_category))) {
-                creationCounter++;
+    }
+
+    private String getNextUniqueCategoryName() {
+        String basicName = ctx.getString(R.string.my_category)
+                + (creationCounter == 0 ? "" : creationCounter + 1);
+        boolean nameExists;
+        do {
+            nameExists = false;
+            // see if there's a category that already has this name
+            for (Category category : categories) {
+                if (category.getName().equals(basicName)) {
+                    // if so, put the next number (creationCounter) after the name and check again
+                    nameExists = true;
+                    creationCounter++;
+                    basicName = ctx.getString(R.string.my_category) + (creationCounter + 1);
+                    break;
+                }
             }
         }
-
+        while (nameExists);
+        creationCounter++;
+        return basicName;
     }
 
 }
