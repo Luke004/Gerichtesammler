@@ -23,10 +23,12 @@ import java.util.List;
 public class ColoredDishesArrayAdapter extends ArrayAdapter<Dish> {
 
     private Context context;
+    private List<Dish> dishes;
 
     public ColoredDishesArrayAdapter(Context context, int textViewResourceId, List<Dish> dishes) {
         super(context, textViewResourceId, dishes);
         this.context = context;
+        this.dishes = dishes;
     }
 
     @Override
@@ -115,4 +117,23 @@ public class ColoredDishesArrayAdapter extends ArrayAdapter<Dish> {
         imageView.setLayoutParams(star_image_view.getLayoutParams());
         return imageView;
     }
+
+    void updateDishCategory(Dish affectedDish) {
+        for (Dish dish : dishes) {
+            if (dish.getId() == affectedDish.getId()) {
+                dish.setDishType(affectedDish.getDishType());
+                break;
+            }
+        }
+    }
+
+    void deleteDishCategory(Dish affectedDish) {
+        for (Dish dish : dishes) {
+            if (dish.getId() == affectedDish.getId()) {
+                dish.setDishType("");
+                break;
+            }
+        }
+    }
+
 }

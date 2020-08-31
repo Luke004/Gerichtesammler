@@ -20,6 +20,7 @@
     <string name="hint_dish_duration">Zubereitungszeit in Stunden (optional)</string>
     <string name="hint_dish_duration_example">z.B. 1,5</string>
     <string name="hint_dish_recipe">Rezept Text oder Foto (optional)</string>
+    <string name="warning_affected_dishes_category_change">Warnung: Dies betrifft %1$d Gericht(e)!</string>
     <string name="dish_duration">Zubereitungszeit</string>
     <string name="dish_duration_short">Dauer</string>
     <string name="error_field_required">Dieses Feld ist erforderlich!</string>

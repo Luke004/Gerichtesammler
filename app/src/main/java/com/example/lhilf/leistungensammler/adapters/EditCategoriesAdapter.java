@@ -17,13 +17,9 @@ import com.example.lhilf.leistungensammler.AppDatabase;
 import com.example.lhilf.leistungensammler.Category;
 
 import com.example.lhilf.leistungensammler.Dish;
-import com.example.lhilf.leistungensammler.Helper;
 import com.example.lhilf.leistungensammler.R;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import top.defaults.colorpicker.ColorPickerPopup;
 
@@ -32,7 +28,6 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
     private Context context;
     private List<Category> categories;
     private ColoredDishesArrayAdapter dishesArrayAdapter;
-    private Map<Integer, String> alreadyCreatedFromThisPosition;
 
     public EditCategoriesAdapter(Context context, int textViewResourceId, List<Category> categories,
                                  ColoredDishesArrayAdapter dishesArrayAdapter) {
@@ -40,7 +35,6 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         this.context = context;
         this.categories = categories;
         this.dishesArrayAdapter = dishesArrayAdapter;
-        alreadyCreatedFromThisPosition = new HashMap<>();
     }
 
     @Override
@@ -54,6 +48,18 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         ImageView category_delete_btn = rowView.findViewById(R.id.category_delete_btn);
 
         Category category = getItem(position);
+
+        // if the id is 0, a new category was just added and the adapter doesn't have the info of its
+        // generated id in the db
+        // so let's get the correct id now:
+        if (category.getId() == 0) {
+            this.notifyDataSetChanged();
+            Category category_with_correct_id = AppDatabase.getDb(context).categoryDAO()
+                    .findByName(category.getName());    // find the correct one by name
+            Toast.makeText(context, "switched with id: " + category_with_correct_id
+                    .getId(), Toast.LENGTH_LONG).show();
+            category.setId(category_with_correct_id.getId());   // now set the id correctly
+        }
 
         category_color_pick_btn.setOnClickListener(view -> new ColorPickerPopup.Builder(context)
                 .initialColor(Color.parseColor(category.getColor())) // set initial color
@@ -82,17 +88,29 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                         Toast.LENGTH_LONG).show();
                 return;
             }
+            // check how many dishes will be affected by this change
+            List<Dish> affected_dishes = AppDatabase.getDb(context).dishDAO()
+                    .findAllByCategory(category.getName());
+            int affectedDishesSize = affected_dishes.size();
+
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setMessage(R.string.action_delete_category)
+            builder.setMessage(context.getString(R.string.action_delete_category)
+                    // add a warning if at least 1 dish is affected
+                    + (affectedDishesSize > 0 ? "\n" + context.getString(R.string
+                    .warning_affected_dishes_category_change, affectedDishesSize) : ""))
                     .setTitle(category.getName())
                     .setCancelable(true)
-                    .setPositiveButton(R.string.confirm, (dialog, id) -> {
+                    .setPositiveButton(context.getString(R.string.confirm), (dialog, id) -> {
                         // remove the category
                         this.notifyDataSetChanged();
                         this.categories.remove(category);
-                        if (!category.getName().equals(context.getString(R.string.my_category))) {
-                            // only remove if it really exists in db (name is not = string.my_category)
-                            AppDatabase.getDb(context).categoryDAO().delete(category);
+                        AppDatabase.getDb(context).categoryDAO().delete(category);
+                        // delete the category for all affected dishes
+                        for (Dish affectedDish : affected_dishes) {
+                            affectedDish.setDishType("");
+                            AppDatabase.getDb(context).dishDAO().update(affectedDish);
+                            dishesArrayAdapter.deleteDishCategory(affectedDish);
+                            dishesArrayAdapter.notifyDataSetChanged();
                         }
                     })
                     .setNegativeButton(R.string.cancel, (dialog, id) -> {
@@ -107,53 +125,38 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 category_name.clearFocus();
                 if (!category_name.getText().toString().equals(category.getName())) {
-                    String newDishType = category_name.getText().toString();
+                    String newCategoryName = category_name.getText().toString();
                     // capitalize first letter
-                    newDishType = newDishType.substring(0, 1).toUpperCase() + newDishType.substring(1);
-                    List<Dish> dishes = AppDatabase.getDb(context).dishDAO()
+                    newCategoryName = newCategoryName.substring(0, 1).toUpperCase()
+                            + newCategoryName.substring(1);
+                    List<Dish> affected_dishes = AppDatabase.getDb(context).dishDAO()
                             .findAllByCategory(category.getName());
                     // update the category for all affected dishes
-                    for (Dish dish : dishes) {
-                        dish.setDishType(newDishType);
-                        AppDatabase.getDb(context).dishDAO().update(dish);
+                    for (Dish affectedDish : affected_dishes) {
+                        affectedDish.setDishType(newCategoryName);
+                        AppDatabase.getDb(context).dishDAO().update(affectedDish);
+                        dishesArrayAdapter.updateDishCategory(affectedDish);
                     }
-                    category.setName(newDishType);
-                    if (dishes.size() > 0) {    // category was renamed
-                        // update the category itself
-                        AppDatabase.getDb(context).categoryDAO().update(category);
-                        // update dishesArrayAdapter
-                        dishesArrayAdapter.clear();
-                        dishes = AppDatabase.getDb(context).dishDAO().findAll();
-                        Helper.sortDishesBySortingMethod(context, dishes, false);
-                        dishesArrayAdapter.addAll(dishes);
-                    } else {    // new category was created
-                        // color check to prevent double creation by editing name multiple times
-                        if (!alreadyCreatedFromThisPosition.containsKey(position)) {
-                            AppDatabase.getDb(context).categoryDAO().persist(category);
-                            alreadyCreatedFromThisPosition.put(position, newDishType);
-                        } else {
-                            // double creation -> only update the name
-                            String categoryName = alreadyCreatedFromThisPosition.get(position);
-                            Category existingCategory = AppDatabase.getDb(context).categoryDAO()
-                                    .findByName(categoryName);
-                            existingCategory.setName(newDishType);
-                            AppDatabase.getDb(context).categoryDAO().update(existingCategory);
-                        }
-                    }
+                    // update the category itself
+                    category.setName(newCategoryName);
+                    AppDatabase.getDb(context).categoryDAO().update(category);
+                    Toast.makeText(context, "text of id: " + category.getId() + " updateChangedDishes to "
+                            + newCategoryName, Toast.LENGTH_LONG).show();
                 }
                 return true;
             }
             return false;
         });
 
+        // set the category name field
         category_name.setText(category.getName());
 
+        // set the category color field
         try {
             category_color_pick_btn.setBackgroundColor(Color.parseColor(category.getColor()));
         } catch (Exception e) {
             category_color_pick_btn.setBackgroundColor(Color.WHITE);
         }
-
 
         return rowView;
     }

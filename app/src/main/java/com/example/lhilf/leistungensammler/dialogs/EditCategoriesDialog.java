@@ -26,6 +26,7 @@ public class EditCategoriesDialog extends Dialog {
     private Context ctx;
     private ColoredDishesArrayAdapter dishesAdapter;
     private Random random;
+    private int creationCounter;
 
     public EditCategoriesDialog(Context ctx, ColoredDishesArrayAdapter dishesAdapter) {
         super(ctx);
@@ -54,16 +55,31 @@ public class EditCategoriesDialog extends Dialog {
             // format it as hexadecimal string (with hash tag and leading zeros)
             String colorCode = String.format("#%06x", nextInt);
 
-            Category category = new Category(ctx.getString(R.string.my_category), colorCode);
+            Category category = new Category(
+                    ctx.getString(R.string.my_category)
+                            // add a number for uniqueness of the name
+                            + (creationCounter > 0 ? creationCounter + 1 : ""),
+                    colorCode);
 
             categories.add(category);
+            AppDatabase.getDb(ctx).categoryDAO().persist(category);
 
             editCategoriesAdapter.notifyDataSetChanged();
 
             // for auto scrolling to the bottom of list in case it goes beyond the dialog's size
             categoriesListView.post(() -> categoriesListView.setSelection(editCategoriesAdapter
                     .getCount() - 1));
+
+            creationCounter++;  // keep track of how many categories we have created
         });
+
+        // increment the creation counter for each default name category that already exists
+        // in the category list ( -> this is just to prevent a double name bug)
+        for (Category category : categories) {
+            if (category.getName().equals(ctx.getString(R.string.my_category))) {
+                creationCounter++;
+            }
+        }
 
     }
 
