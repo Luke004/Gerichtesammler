@@ -22,6 +22,13 @@ public interface DishDAO {
     List<Dish> findAll();
 
     /**
+     * Findet alle {@link Dish} Objekte mit entsprechender Kategorie.
+     * @return alle {@link Dish} Objekte mit entsprechender Kategorie
+     */
+    @Query("SELECT * FROM Dish WHERE dishType = :dishType")
+    List<Dish> findAllByCategory(String dishType);
+
+    /**
      * Sucht das {@link Dish} Objekt welches mit der gegebenen id gefunden wurde und gibt
      * es als return Wert zurück.
      * @param id Dish id

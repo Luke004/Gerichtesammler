@@ -322,7 +322,7 @@ public class DishesActivity extends AppCompatActivity {
                     Toast.makeText(DishesActivity.this, "edit categories",
                             Toast.LENGTH_LONG).show();
 
-                    EditCategoriesDialog dialog = new EditCategoriesDialog(DishesActivity.this);
+                    EditCategoriesDialog dialog = new EditCategoriesDialog(DishesActivity.this, dishesAdapter);
                     dialog.show();
                     return true;
             }

@@ -76,7 +76,11 @@ public class ColoredDishesArrayAdapter extends ArrayAdapter<Dish> {
         Category category = AppDatabase.getDb(context).categoryDAO().findByName(dish_type);
 
         if (category != null) {
-            dish_layout.setBackgroundColor(Color.parseColor(category.getColor()));
+            try {
+                dish_layout.setBackgroundColor(Color.parseColor(category.getColor()));
+            } catch (Exception e) {
+                dish_layout.setBackgroundColor(Color.WHITE);
+            }
         } else {
             // category was deleted -> use white
             dish_layout.setBackgroundColor(Color.WHITE);

@@ -24,9 +24,9 @@ public interface CategoryDAO {
     /**
      * Sucht das {@link Category} Objekt welches mit der gegebenen id gefunden wurde und gibt
      * es als return Wert zurück.
-     * @param id Category id
+     * @param name Category name
      *
-     * @return id gefunden = Optional<Category>,
+     * @return name gefunden = Optional<Category>,
      *     nicht gefunden = Optional.empty()
      */
     @Query("SELECT * FROM Category WHERE name = :name")

@@ -3,11 +3,15 @@ package com.example.lhilf.leistungensammler.adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,6 +20,7 @@ import android.widget.Toast;
 import com.example.lhilf.leistungensammler.AppDatabase;
 import com.example.lhilf.leistungensammler.Category;
 
+import com.example.lhilf.leistungensammler.Dish;
 import com.example.lhilf.leistungensammler.R;
 
 import java.io.File;
@@ -28,11 +33,14 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
 
     private Context context;
     private List<Category> categories;
+    private ColoredDishesArrayAdapter dishesArrayAdapter;
 
-    public EditCategoriesAdapter(Context context, int textViewResourceId, List<Category> categories) {
+    public EditCategoriesAdapter(Context context, int textViewResourceId, List<Category> categories,
+                                 ColoredDishesArrayAdapter dishesArrayAdapter) {
         super(context, textViewResourceId, categories);
         this.context = context;
         this.categories = categories;
+        this.dishesArrayAdapter = dishesArrayAdapter;
     }
 
     @Override
@@ -40,8 +48,8 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.category_item, parent, false);
-        RelativeLayout edit_category_layout = rowView.findViewById(R.id.edit_category_layout);
-        TextView category_name = rowView.findViewById(R.id.category_name);
+        //RelativeLayout edit_category_layout = rowView.findViewById(R.id.edit_category_layout);
+        EditText category_name = rowView.findViewById(R.id.category_name);
         Button category_color_pick_btn = rowView.findViewById(R.id.category_color_pick_btn);
         ImageView category_delete_btn = rowView.findViewById(R.id.category_delete_btn);
 
@@ -59,7 +67,12 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                 .show(view, new ColorPickerPopup.ColorPickerObserver() {
                     @Override
                     public void onColorPicked(int color) {
-                        view.setBackgroundColor(color);
+                        if (Color.parseColor(category.getColor()) != color) {
+                            view.setBackgroundColor(color);
+                            category.setColor("#" + Integer.toHexString(color));
+                            AppDatabase.getDb(context).categoryDAO().update(category);
+                            dishesArrayAdapter.notifyDataSetChanged();
+                        }
                     }
                 }));
 
@@ -88,9 +101,38 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
             alert.show();
         });
 
+        category_name.setOnEditorActionListener((v, actionId, event) -> {
+            if(actionId == EditorInfo.IME_ACTION_DONE){
+                category_name.clearFocus();
+                if (!category_name.getText().toString().equals(category.getName())) {
+                    String newDishType = category_name.getText().toString();
+                    List<Dish> dishes = AppDatabase.getDb(context).dishDAO()
+                            .findAllByCategory(category.getName());
+                    // update the category for all affected dishes
+                    for (Dish dish : dishes) {
+                        dish.setDishType(newDishType);
+                        AppDatabase.getDb(context).dishDAO().update(dish);
+                    }
+                    // update the category itself
+                    category.setName(newDishType);
+                    AppDatabase.getDb(context).categoryDAO().update(category);
+                    // update dishesArrayAdapter
+                    dishesArrayAdapter.clear();
+                    dishesArrayAdapter.addAll(AppDatabase.getDb(context).dishDAO().findAll());
+                }
+                return true;
+            }
+            return false;
+        });
+
         category_name.setText(category.getName());
 
-        category_color_pick_btn.setBackgroundColor(Color.parseColor(category.getColor()));
+        try {
+            category_color_pick_btn.setBackgroundColor(Color.parseColor(category.getColor()));
+        } catch (Exception e) {
+            category_color_pick_btn.setBackgroundColor(Color.WHITE);
+        }
+
 
         return rowView;
     }

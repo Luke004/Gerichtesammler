@@ -50,6 +50,7 @@
     <string name="hours_short">Std.</string>
     <string name="minutes_short">Min.</string>
     <string name="not_available"> - </string>
+    <string name="my_category">Meine Kategorie</string>
     <string name="rating_1">Gut</string>
     <string name="rating_2">Sehr gut</string>
     <string name="rating_3">Ausgezeichnet</string>
