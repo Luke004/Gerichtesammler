@@ -21,6 +21,7 @@ import com.example.lhilf.leistungensammler.AppDatabase;
 import com.example.lhilf.leistungensammler.Category;
 
 import com.example.lhilf.leistungensammler.Dish;
+import com.example.lhilf.leistungensammler.Helper;
 import com.example.lhilf.leistungensammler.R;
 
 import java.io.File;
@@ -102,7 +103,7 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         });
 
         category_name.setOnEditorActionListener((v, actionId, event) -> {
-            if(actionId == EditorInfo.IME_ACTION_DONE){
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
                 category_name.clearFocus();
                 if (!category_name.getText().toString().equals(category.getName())) {
                     String newDishType = category_name.getText().toString();
@@ -118,7 +119,9 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                     AppDatabase.getDb(context).categoryDAO().update(category);
                     // update dishesArrayAdapter
                     dishesArrayAdapter.clear();
-                    dishesArrayAdapter.addAll(AppDatabase.getDb(context).dishDAO().findAll());
+                    dishes = AppDatabase.getDb(context).dishDAO().findAll();
+                    Helper.sortDishesBySortingMethod(context, dishes, false);
+                    dishesArrayAdapter.addAll(dishes);
                 }
                 return true;
             }

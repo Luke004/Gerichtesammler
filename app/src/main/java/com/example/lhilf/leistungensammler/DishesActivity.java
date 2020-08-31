@@ -33,17 +33,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lhilf.leistungensammler.adapters.ColoredDishesArrayAdapter;
-import com.example.lhilf.leistungensammler.comparators.CategoryComparator;
-import com.example.lhilf.leistungensammler.comparators.DurationComparator;
-import com.example.lhilf.leistungensammler.comparators.LastCookedComparator;
-import com.example.lhilf.leistungensammler.comparators.NameComparator;
-import com.example.lhilf.leistungensammler.comparators.RatingComparator;
 import com.example.lhilf.leistungensammler.dialogs.EditCategoriesDialog;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -55,9 +49,9 @@ public class DishesActivity extends AppCompatActivity {
     private boolean onStartFlag;
     private boolean onCreateOrEdit;
     private boolean firstTime;
-    private SharedPreferences sharedPref;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 24385;
     private static final String AUTHORITY = "com.example.lhilf.leistungensammler.fileprovider";
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +61,7 @@ public class DishesActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         dishesListView = findViewById(R.id.records_list);
         registerForContextMenu(dishesListView);
-        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        sharedPref = getSharedPreferences("settings", Context.MODE_PRIVATE);
 
         //sharedPref.edit().remove("first_run_ever").apply();
 
@@ -176,7 +170,7 @@ public class DishesActivity extends AppCompatActivity {
         dishes = AppDatabase.getDb(this).dishDAO().findAll();
         if (onCreateOrEdit) {
             if (firstTime) {
-                sortBySortingMethod(false);
+                Helper.sortDishesBySortingMethod(this, dishes, false);
                 dishesAdapter = new ColoredDishesArrayAdapter(this, R.layout.dish_item, dishes);
                 dishesListView.setAdapter(dishesAdapter);
                 // change layout size from '0dp' to 'match_parent'
@@ -187,14 +181,14 @@ public class DishesActivity extends AppCompatActivity {
                 dishesListView.requestLayout();
                 firstTime = false;
             } else {
-                sortBySortingMethod(false);
+                Helper.sortDishesBySortingMethod(this, dishes, false);
                 dishesAdapter.clear();
                 dishesAdapter.addAll(dishes);
             }
         } else {
             firstTime = true;
             if (dishes.size() > 0) {
-                sortBySortingMethod(false);
+                Helper.sortDishesBySortingMethod(this, dishes, false);
                 dishesAdapter = new ColoredDishesArrayAdapter(this, R.layout.dish_item, dishes);
                 dishesListView.setAdapter(dishesAdapter);
                 // change layout size from '0dp' to 'match_parent'
@@ -218,7 +212,7 @@ public class DishesActivity extends AppCompatActivity {
             dishes = AppDatabase.getDb(this).dishDAO().findAll();
             if (onCreateOrEdit) {
                 if (firstTime) {
-                    sortBySortingMethod(false);
+                    Helper.sortDishesBySortingMethod(this, dishes, false);
                     dishesAdapter = new ColoredDishesArrayAdapter(this, R.layout.dish_item, dishes);
                     dishesListView.setAdapter(dishesAdapter);
                     // change layout size from '0dp' to 'match_parent'
@@ -229,7 +223,7 @@ public class DishesActivity extends AppCompatActivity {
                     dishesListView.requestLayout();
                     firstTime = false;
                 } else {
-                    sortBySortingMethod(false);
+                    Helper.sortDishesBySortingMethod(this, dishes, false);
                     dishesAdapter.clear();
                     dishesAdapter.addAll(dishes);
 
@@ -237,7 +231,7 @@ public class DishesActivity extends AppCompatActivity {
             } else {
                 firstTime = true;
                 if (dishes.size() > 0) {
-                    sortBySortingMethod(false);
+                    Helper.sortDishesBySortingMethod(this, dishes, false);
                     dishesAdapter = new ColoredDishesArrayAdapter(this, R.layout.dish_item, dishes);
                     dishesListView.setAdapter(dishesAdapter);
                     // change layout size from '0dp' to 'match_parent'
@@ -302,7 +296,7 @@ public class DishesActivity extends AppCompatActivity {
                                     reversed = false;
                                 }
                                 // finally sort
-                                sortBySortingMethod(reversed);
+                                Helper.sortDishesBySortingMethod(this, dishes, reversed);
 
                                 if (onCreateOrEdit) {
                                     dishesAdapter.clear();
@@ -370,7 +364,7 @@ public class DishesActivity extends AppCompatActivity {
                     // refresh DishesActivity
                     dishes = AppDatabase.getDb(DishesActivity.this).dishDAO().findAll();
                     dishesAdapter.clear();
-                    sortBySortingMethod(false);
+                    Helper.sortDishesBySortingMethod(this, dishes, false);
                     dishesAdapter.addAll(dishes);
                     onCreateOrEdit = true;
                 });
@@ -397,7 +391,7 @@ public class DishesActivity extends AppCompatActivity {
                 AppDatabase.getDb(DishesActivity.this).dishDAO().update(foundDish);
                 // refresh DishesActivity
                 dishes = AppDatabase.getDb(DishesActivity.this).dishDAO().findAll();
-                sortBySortingMethod(false);
+                Helper.sortDishesBySortingMethod(this, dishes, false);
                 dishesAdapter.clear();
                 dishesAdapter.addAll(dishes);
 
@@ -473,33 +467,6 @@ public class DishesActivity extends AppCompatActivity {
         if (requestCode == 1) {
             onCreateOrEdit = resultCode == Activity.RESULT_OK;
         }
-    }
-
-    private void sortBySortingMethod(boolean reversed) {
-        String sortingMethod = sharedPref
-                .getString("sortingMethod", getString(R.string.sort_type_name));
-
-        Toast.makeText(DishesActivity.this, "sortingMethod: " + sortingMethod + "\n"
-                + "reversed: " + reversed, Toast.LENGTH_LONG).show();
-
-
-        if (sortingMethod.equals(getString(R.string.sort_type_name))) {
-            Collections.sort(dishes, new NameComparator(reversed));
-        } else if (sortingMethod.equals(getString(R.string.sort_type_rating))) {
-            Collections.sort(dishes, new RatingComparator(reversed, DishesActivity.this));
-        } else if (sortingMethod.equals(getString(R.string.sort_type_category))) {
-            Collections.sort(dishes, new CategoryComparator(reversed));
-        } else if (sortingMethod.equals(getString(R.string.sort_type_duration))) {
-            Collections.sort(dishes, new DurationComparator(reversed));
-        } else if (sortingMethod.equals(getString(R.string.sort_type_last_cooked))) {
-            Collections.sort(dishes, new LastCookedComparator(reversed));
-        }
-        // save previous sorting method
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("sortingMethod_prev", sortingMethod);
-        // save reversed info
-        editor.putBoolean("sortingMethod_reversed", reversed);
-        editor.apply();
     }
 
 }

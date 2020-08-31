@@ -1,6 +1,7 @@
 package com.example.lhilf.leistungensammler;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,13 +10,22 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.widget.Toast;
+
+import com.example.lhilf.leistungensammler.comparators.CategoryComparator;
+import com.example.lhilf.leistungensammler.comparators.DurationComparator;
+import com.example.lhilf.leistungensammler.comparators.LastCookedComparator;
+import com.example.lhilf.leistungensammler.comparators.NameComparator;
+import com.example.lhilf.leistungensammler.comparators.RatingComparator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class Helper {
@@ -135,6 +145,31 @@ public class Helper {
         return (int) (60 * hours);
     }
 
+    public static void sortDishesBySortingMethod(Context ctx, List<Dish> dishes, boolean reversed) {
+        String sortingMethod = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getString("sortingMethod",  ctx.getString(R.string.sort_type_name));
 
+        Toast.makeText( ctx, "sortingMethod: " + sortingMethod + "\n"
+                + "reversed: " + reversed, Toast.LENGTH_LONG).show();
+
+        if (sortingMethod.equals(ctx.getString(R.string.sort_type_name))) {
+            Collections.sort(dishes, new NameComparator(reversed));
+        } else if (sortingMethod.equals(ctx.getString(R.string.sort_type_rating))) {
+            Collections.sort(dishes, new RatingComparator(reversed, ctx));
+        } else if (sortingMethod.equals(ctx.getString(R.string.sort_type_category))) {
+            Collections.sort(dishes, new CategoryComparator(reversed));
+        } else if (sortingMethod.equals(ctx.getString(R.string.sort_type_duration))) {
+            Collections.sort(dishes, new DurationComparator(reversed));
+        } else if (sortingMethod.equals(ctx.getString(R.string.sort_type_last_cooked))) {
+            Collections.sort(dishes, new LastCookedComparator(reversed));
+        }
+        // save previous sorting method
+        SharedPreferences.Editor editor = ctx.getSharedPreferences("settings",
+                Context.MODE_PRIVATE).edit();
+        editor.putString("sortingMethod_prev", sortingMethod);
+        // save reversed info
+        editor.putBoolean("sortingMethod_reversed", reversed);
+        editor.apply();
+    }
 
 }
