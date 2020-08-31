@@ -60,6 +60,9 @@ public class EditCategoriesDialog extends Dialog {
 
             editCategoriesAdapter.notifyDataSetChanged();
 
+            // for auto scrolling to the bottom of list in case it goes beyond the dialog's size
+            categoriesListView.post(() -> categoriesListView.setSelection(editCategoriesAdapter
+                    .getCount() - 1));
         });
 
     }
