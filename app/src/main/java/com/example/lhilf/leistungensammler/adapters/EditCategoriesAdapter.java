@@ -3,8 +3,6 @@ package com.example.lhilf.leistungensammler.adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lhilf.leistungensammler.AppDatabase;
@@ -24,9 +20,10 @@ import com.example.lhilf.leistungensammler.Dish;
 import com.example.lhilf.leistungensammler.Helper;
 import com.example.lhilf.leistungensammler.R;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import top.defaults.colorpicker.ColorPickerPopup;
 
@@ -35,6 +32,7 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
     private Context context;
     private List<Category> categories;
     private ColoredDishesArrayAdapter dishesArrayAdapter;
+    private Map<Integer, String> alreadyCreatedFromThisPosition;
 
     public EditCategoriesAdapter(Context context, int textViewResourceId, List<Category> categories,
                                  ColoredDishesArrayAdapter dishesArrayAdapter) {
@@ -42,6 +40,7 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
         this.context = context;
         this.categories = categories;
         this.dishesArrayAdapter = dishesArrayAdapter;
+        alreadyCreatedFromThisPosition = new HashMap<>();
     }
 
     @Override
@@ -69,10 +68,10 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                     @Override
                     public void onColorPicked(int color) {
                         if (Color.parseColor(category.getColor()) != color) {
+                            dishesArrayAdapter.notifyDataSetChanged();
                             view.setBackgroundColor(color);
                             category.setColor("#" + Integer.toHexString(color));
                             AppDatabase.getDb(context).categoryDAO().update(category);
-                            dishesArrayAdapter.notifyDataSetChanged();
                         }
                     }
                 }));
@@ -129,13 +128,16 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                         dishesArrayAdapter.addAll(dishes);
                     } else {    // new category was created
                         // color check to prevent double creation by editing name multiple times
-                        Category exists = AppDatabase.getDb(context).categoryDAO()
-                                .existsColor(category.getColor());
-                        if (exists == null) {
+                        if (!alreadyCreatedFromThisPosition.containsKey(position)) {
                             AppDatabase.getDb(context).categoryDAO().persist(category);
-                        } else {    // double creation -> only update the name
-                            exists.setName(newDishType);
-                            AppDatabase.getDb(context).categoryDAO().update(exists);
+                            alreadyCreatedFromThisPosition.put(position, newDishType);
+                        } else {
+                            // double creation -> only update the name
+                            String categoryName = alreadyCreatedFromThisPosition.get(position);
+                            Category existingCategory = AppDatabase.getDb(context).categoryDAO()
+                                    .findByName(categoryName);
+                            existingCategory.setName(newDishType);
+                            AppDatabase.getDb(context).categoryDAO().update(existingCategory);
                         }
                     }
                 }
