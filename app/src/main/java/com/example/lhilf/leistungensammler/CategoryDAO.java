@@ -33,6 +33,17 @@ public interface CategoryDAO {
     Category findByName(String name);
 
     /**
+     * Sucht das {@link Category} Objekt welches mit der gegebenen color gefunden wurde und gibt
+     * es als return Wert zurück.
+     * @param color Category color
+     *
+     * @return color gefunden = Optional<Dish>,
+     *     nicht gefunden = Optional.empty()
+     */
+    @Query("SELECT * FROM Category WHERE color = :color")
+    Category existsColor(String color);
+
+    /**
      * Löscht ein {@link Category} Objekt.
      * @param category {@link Category}
      */

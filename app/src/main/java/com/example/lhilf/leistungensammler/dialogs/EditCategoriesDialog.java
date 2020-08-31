@@ -56,8 +56,9 @@ public class EditCategoriesDialog extends Dialog {
 
             Category category = new Category(ctx.getString(R.string.my_category), colorCode);
 
-            //AppDatabase.getDb(ctx).categoryDAO().
+            categories.add(category);
 
+            editCategoriesAdapter.notifyDataSetChanged();
 
         });
 

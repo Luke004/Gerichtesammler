@@ -89,10 +89,12 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                     .setCancelable(true)
                     .setPositiveButton(R.string.confirm, (dialog, id) -> {
                         // remove the category
-                        AppDatabase.getDb(context).categoryDAO().delete(category);
-                        this.clear();
-                        categories = AppDatabase.getDb(context).categoryDAO().findAll();
-                        this.addAll(categories);
+                        this.notifyDataSetChanged();
+                        this.categories.remove(category);
+                        if (!category.getName().equals(context.getString(R.string.my_category))) {
+                            // only remove if it really exists in db (name is not = string.my_category)
+                            AppDatabase.getDb(context).categoryDAO().delete(category);
+                        }
                     })
                     .setNegativeButton(R.string.cancel, (dialog, id) -> {
                         // cancel
@@ -107,6 +109,8 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                 category_name.clearFocus();
                 if (!category_name.getText().toString().equals(category.getName())) {
                     String newDishType = category_name.getText().toString();
+                    // capitalize first letter
+                    newDishType = newDishType.substring(0, 1).toUpperCase() + newDishType.substring(1);
                     List<Dish> dishes = AppDatabase.getDb(context).dishDAO()
                             .findAllByCategory(category.getName());
                     // update the category for all affected dishes
@@ -114,14 +118,26 @@ public class EditCategoriesAdapter extends ArrayAdapter<Category> {
                         dish.setDishType(newDishType);
                         AppDatabase.getDb(context).dishDAO().update(dish);
                     }
-                    // update the category itself
                     category.setName(newDishType);
-                    AppDatabase.getDb(context).categoryDAO().update(category);
-                    // update dishesArrayAdapter
-                    dishesArrayAdapter.clear();
-                    dishes = AppDatabase.getDb(context).dishDAO().findAll();
-                    Helper.sortDishesBySortingMethod(context, dishes, false);
-                    dishesArrayAdapter.addAll(dishes);
+                    if (dishes.size() > 0) {    // category was renamed
+                        // update the category itself
+                        AppDatabase.getDb(context).categoryDAO().update(category);
+                        // update dishesArrayAdapter
+                        dishesArrayAdapter.clear();
+                        dishes = AppDatabase.getDb(context).dishDAO().findAll();
+                        Helper.sortDishesBySortingMethod(context, dishes, false);
+                        dishesArrayAdapter.addAll(dishes);
+                    } else {    // new category was created
+                        // color check to prevent double creation by editing name multiple times
+                        Category exists = AppDatabase.getDb(context).categoryDAO()
+                                .existsColor(category.getColor());
+                        if (exists == null) {
+                            AppDatabase.getDb(context).categoryDAO().persist(category);
+                        } else {    // double creation -> only update the name
+                            exists.setName(newDishType);
+                            AppDatabase.getDb(context).categoryDAO().update(exists);
+                        }
+                    }
                 }
                 return true;
             }
